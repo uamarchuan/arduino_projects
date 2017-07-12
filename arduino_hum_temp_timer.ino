@@ -3,19 +3,17 @@
 #include <LiquidCrystal_I2C.h>
 #include <DHT.h>
 
-
 /*-----( Declare Constants )-----*/
 DHT dht;
 const int tInterval = 60; //60
-const int tDelay = 59000;   //59000
 int tBrake = tInterval;
 int tRest = 7;
   String sH = "H(%):";
   String sT = "T('C):";
   String sS = " ";
-  //unsigned long seconds = 1000L; // !!! SEE THE CAPITAL "L" USED!!!
-  //unsigned long minutes = seconds * 60;
-  //unsigned long hours = minutes * 60;
+unsigned long seconds = 1000L; // !!! SEE THE CAPITAL "L" USED!!!
+//unsigned long minutes = seconds * 59;
+//unsigned long hours = minutes * 60;
 const int buttonPin = 4;     // the number of the pushbutton pin
 boolean sBlicking = false;
   
@@ -48,18 +46,24 @@ void setup()   /*----( SETUP: RUNS ONCE )----*/
 
 void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 {
-  checkButton();
   sensor();
   rTime();
-  
+ 
   //Serial.println(sBlicking);
   
   if (sBlicking == false) {
-    //delay(5900);
-    delay(tDelay);
+    //delay(minutes);
+    int x = 0;
+    while (x < 59) {
+      delay(seconds);
+      int buttonValue = digitalRead(buttonPin);
+      if (buttonValue == HIGH) {
+        tBrake = tInterval;
+        break;
+      }
+      x++;
+     }
   } 
-  
-  
 }/* --(end main loop )-- */
 
 void sensor(){
@@ -84,12 +88,19 @@ void rTime() {
   }else if(tBrake > 0 && tBrake <= tRest){
     lcd.setCursor(0,1);
     lcd.print("Make a coffee ;)");
-    for (int x = 0; x < 30; x++) {
+    int x = 0;
+    while (x < 29) {
       lcd.display();
-      delay(1000);
+      delay(seconds);
       lcd.noDisplay();
-      delay(1000);
-      checkButton();
+      delay(seconds);
+      lcd.display();
+      int buttonValue = digitalRead(buttonPin);
+      if (buttonValue == HIGH) {
+        tBrake = tInterval+1;
+        break;
+      }
+      x++;
     }
     sBlicking = true;
     
@@ -101,13 +112,4 @@ void rTime() {
   }
   tBrake = tBrake-1;
 }
-
-void checkButton() {
-  int buttonValue = digitalRead(buttonPin);
-  
-  if (buttonValue == HIGH) {
-    tBrake = tInterval;
-  }
-}
-
 /* ( THE END ) */
